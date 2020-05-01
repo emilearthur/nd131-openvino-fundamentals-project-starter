@@ -88,13 +88,13 @@ def infer_on_stream(args, client):
     :return: None
     """
     # Initialise the class
-    infer_network = Network()
+    network = Network()
     # Set Probability threshold for detections
     prob_threshold = args.prob_threshold
 
-    ### DONE: Load the model through `infer_network` ###
-    infer_network.load_model(args.model, args.device, args.cpu_extension)
-    n, c, h, w = infer_network[1]
+    ### DONE: Load the model through `network` ###
+    network.load_model(args.model, args.device, args.cpu_extension)
+    n, c, h, w = network[1]
     
 
     # intialising variables 
@@ -122,8 +122,8 @@ def infer_on_stream(args, client):
     if input_stream:
         cap.open(args.input)
 
-    initial_w = cap.get(3)
-    initial_h = cap.get(4)
+    initial_w = int(cap.get(3))
+    initial_h = int(cap.get(4))
 
 
 
@@ -157,7 +157,8 @@ def infer_on_stream(args, client):
 
 
             ### DONE: Extract any desired stats from the results ###
-            frame, current_count = extract(frame, result, prob_threshold)
+            frame, current_count = extract(frame, result, prob_threshold,
+                                            initial_w, initial_h)
 
             inf_message = "Inference Time: {:.3f}ms".format(diff_time)
 
@@ -201,10 +202,10 @@ def infer_on_stream(args, client):
 
 
 
+    
 
 
-
-def extract(frame, result,prob_threshold):
+def extract(frame, result,prob_threshold,initial_w, initial_h):
     current_count =0 
     for object in result[0][0]:
         if object[2] > prob_threshold:
@@ -225,9 +226,7 @@ def main():
     :return: None
     """
 
-    network = Network()
-
-    global initial_w, initial_h,prob_threshold
+    # global initial_w, initial_h,prob_threshold
 
     # Grab command line args
     args = build_argparser().parse_args()
