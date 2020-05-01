@@ -26,7 +26,7 @@ import os
 import sys
 import logging as log
 from openvino.inference_engine import IENetwork, IECore
-CPU_EXTENSION = "/opt/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_sse4.so"
+# CPU_EXTENSION = "/opt/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_sse4.so"
 
 
 
@@ -56,9 +56,9 @@ class Network:
         if cpu_extension and "CPU" in device:
             self.plugin.add_extension(cpu_extension,device) 
 
-        ### TODO: Check for supported layers ###
+        ### DONE: Check for supported layers ###
         network_supported_layers = self.plugin.query_network(network = self.network, device_name="CPU")
-        ### TODO: Add any necessary extensions ### 
+        ### DONE: Add any necessary extensions ### 
         not_supported_layers = []
         for layer in self.network.layers.keys():
             if layer not in network_supported_layers:
@@ -67,7 +67,7 @@ class Network:
                 log.debug("Not supported  layers in model: ".format(not_supported_layers))
                 exit(1)
 
-        ### TODO: Return the loaded inference plugin ###
+        ### DONE: Return the loaded inference plugin ###
         self.network = IENetwork(model=model_xml, weights=model_bin)
         # read the IR as a IENetwork 
         self.exec_network = self.plugin.load_network(self.network, device)

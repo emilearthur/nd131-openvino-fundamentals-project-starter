@@ -70,7 +70,7 @@ def build_argparser():
 
 
 def connect_mqtt():
-    ### TODO: Connect to the MQTT client ###
+    ### DONE: Connect to the MQTT client ###
     client = mqtt.Client()
     client.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE_INTERVAL)
 
@@ -92,7 +92,7 @@ def infer_on_stream(args, client):
     # Set Probability threshold for detections
     prob_threshold = args.prob_threshold
 
-    ### TODO: Load the model through `infer_network` ###
+    ### DONE: Load the model through `infer_network` ###
     infer_network.load_model(args.model, args.device, args.cpu_extension)
     n, c, h, w = infer_network[1]
     
@@ -105,7 +105,7 @@ def infer_on_stream(args, client):
     start = 0 
 
 
-    ### TODO: Handle the input stream ###
+    ### DONE: Handle the input stream ###
     # check for CAM
     if args.input == 'CAM':
         input_stream = 0 
@@ -127,47 +127,76 @@ def infer_on_stream(args, client):
 
 
 
-    ### TODO: Loop until stream is over ###
+    ### DONE: Loop until stream is over ###
     while cap.isOpened():
-        ### TODO: Read from the video capture ###   
+        ### DONE: Read from the video capture ###   
         flag, frame = cap.read() 
 
         if not flag:
             break 
         key_pressed = cv2.waitKey(60)
 
-        ### TODO: Pre-process the image as needed ###
+        ### DONE: Pre-process the image as needed ###
         image = cv2.resize(frame, (w,h))
         image = image.transpose((2,0,1))
         image = image.reshape((n,c,h,w))
 
-        ### TODO: Start asynchronous inference for specified request ###
+        ### DONE: Start asynchronous inference for specified request ###
         inf_start_time = time.time() # time inference start
         network.exec_net(current_request_id, image)
 
 
 
-        ### TODO: Wait for the result ###
+        ### DONE: Wait for the result ###
         if network.wait(current_request_id) == 0:
             inf_end_time = time.time() # time inference ended
             diff_time = inf_start_time - inf_end_time # difference in time 
 
-            ### TODO: Get the results of the inference request ###
-            result = network.get_output(current_request_id) 
-            frame, current_count = extract(frame, result, args.prob_threshold)
+            ### DONE: Get the results of the inference request ###
+            result = network.get_output(current_request_id)  
+
+
+            ### DONE: Extract any desired stats from the results ###
+            frame, current_count = extract(frame, result, prob_threshold)
+
+            inf_message = "Inference Time: {:.3f}ms".format(diff_time)
+
+            cv2.putText(frame, inf_message, (15,15), cv2.FONT_HERSHEY_COMPLEX,
+                        0.5, (200, 10, 10), 1)
             
 
-
-            ### TODO: Extract any desired stats from the results ###
-
-            ### TODO: Calculate and send relevant information on ###
+            ### DONE: Calculate and send relevant information on ###
             ### current_count, total_count and duration to the MQTT server ###
             ### Topic "person": keys of "count" and "total" ###
             ### Topic "person/duration": key of "duration" ###
+            if current_count > last:
+                start_time = time.time()
+                total += current_count - last 
+                client.publish("person", json.dump({"total":total}))
 
-        ### TODO: Send the frame to the FFMPEG server ###
+            if current_count < last:
+                end_time = time.time()
+                duration = int(end_time -start_time)
+                client.publish("person/duration", json.dump({"duration":duration}))
 
-        ### TODO: Write an output image if `single_image_mode` ###
+            client.publish("person",json.dump({"count":current_count}))
+            last = current_count
+
+            if key_pressed == 27:
+                break
+
+        ### DONE: Send the frame to the FFMPEG server ###
+        sys.stdout.buffer.write(frame)
+        sys.stdout.flush()
+
+        ### DONE: Write an output image if `single_image_mode` ###
+        if image_flag:
+            cv2.imwrite("output_image.jpeg", frame)
+
+    
+    cap.release()
+    cv2.destroyAllWindows()
+    client.disconnect() 
 
 
 
