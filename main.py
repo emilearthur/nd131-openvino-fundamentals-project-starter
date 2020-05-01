@@ -77,11 +77,6 @@ def connect_mqtt():
     return client
 
 
-def extract_box(image, output, conf_level=0.35):
-
-
-    return 
-
 
 def infer_on_stream(args, client):
     """
@@ -98,21 +93,70 @@ def infer_on_stream(args, client):
     prob_threshold = args.prob_threshold
 
     ### TODO: Load the model through `infer_network` ###
+    infer_network.load_model(args.model, args.device, args.cpu_extension)
+    n, c, h, w = infer_network[1]
     
 
+    # name later 
+    image_flag = False 
+    current_request_id = 0 
+    last = 0 
+    total = 0 
+    start = 0 
+
+
     ### TODO: Handle the input stream ###
+    # check for CAM
+    if args.input == 'CAM':
+        input_stream = 0 
+    # check for image
+    elif args.input.endswith('.jpg') or args.input.endswith('.bmp'):
+        image_flag = True 
+        input_stream = args.input
+    # check for video 
+    else:
+        input_stream = args.input
+
+    cap = cv2.VideoCapture(input_stream) 
+    
+    if input_stream:
+        cap.open(args.input)
+
+    initial_w = cap.get(3)
+    initial_h = cap.get(4)
+
+
 
     ### TODO: Loop until stream is over ###
+    while cap.isOpened():
+        ### TODO: Read from the video capture ###   
+        flag, frame = cap.read() 
 
-        ### TODO: Read from the video capture ###
+        if not flag:
+            break 
+        key_pressed = cv2.waitKey(60)
 
         ### TODO: Pre-process the image as needed ###
+        image = cv2.resize(frame, (w,h))
+        image = image.transpose((2,0,1))
+        image = image.reshape((n,c,h,w))
 
         ### TODO: Start asynchronous inference for specified request ###
+        inf_start_time = time.time() # time inference start
+        network.exec_net(current_request_id, image)
+
+
 
         ### TODO: Wait for the result ###
+        if network.wait(current_request_id) == 0:
+            inf_end_time = time.time() # time inference ended
+            diff_time = inf_start_time - inf_end_time # difference in time 
 
             ### TODO: Get the results of the inference request ###
+            result = network.get_output(current_request_id) 
+            frame, current_count = extract(frame, result, args.prob_threshold)
+            
+
 
             ### TODO: Extract any desired stats from the results ###
 
@@ -126,12 +170,36 @@ def infer_on_stream(args, client):
         ### TODO: Write an output image if `single_image_mode` ###
 
 
+
+
+
+
+
+def extract(frame, result,prob_threshold):
+    current_count =0 
+    for object in result[0][0]:
+        if object[2] > prob_threshold:
+            xmin = int(object[3] * initial_w)
+            ymin = int(object[4] * initial_h)
+            xmax = int(object[5] * initial_w)
+            ymax = int(object[6] * initial_h)
+            cv2.rectangle(frame, (xmin,ymin),(xmax, ymax), (0, 55, 255),1)
+            current_count += 1 
+
+    return frame, current_count
+
+
 def main():
     """
     Load the network and parse the output.
 
     :return: None
     """
+
+    network = Network()
+
+    global initial_w, initial_h,prob_threshold
+
     # Grab command line args
     args = build_argparser().parse_args()
     # Connect to the MQTT server
