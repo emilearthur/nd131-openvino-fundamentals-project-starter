@@ -97,7 +97,7 @@ def infer_on_stream(args, client):
     n, c, h, w = infer_network[1]
     
 
-    # name later 
+    # intialising variables 
     image_flag = False 
     current_request_id = 0 
     last = 0 
