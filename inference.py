@@ -46,6 +46,12 @@ class Network:
 
         self.network = IENetwork(model=model_xml, weights=model_bin)
         
+
+        if not plugin:
+            self.plugin = IEPlugin(device=device)
+        else:
+            self.plugin = plugin
+
         ### DONE: Check for supported layers ###
         if self.plugin.device == "CPU":
             supported_layers = self.plugin.get_supported_layers(self.network)
@@ -55,11 +61,6 @@ class Network:
                 sys.exit(1)
 
         ### DONE: Add any necessary extensions ### 
-        if not plugin:
-            self.plugin = IEPlugin(device=device)
-        else:
-            self.plugin = plugin
-
         if cpu_extension and 'CPU' in device:
             self.plugin.add_cpu_extension(cpu_extension)    
 

@@ -33,7 +33,7 @@ import logging as log
 import paho.mqtt.client as mqtt
 
 from argparse import ArgumentParser
-from inference2 import Network
+from inference import Network
 from collections import deque
 
 # MQTT server environment variables
@@ -108,8 +108,8 @@ def infer_on_stream(args, client):
 
     ### DONE: Load the model through `network` ###
     
-    n, c, h, w = network.load_model(args.model, args.device, 1, 1,
-                                                 current_request_id, args.cpu_extension)[1]
+    n, c, h, w = network.load_model(args.model, args.device,current_request_id,
+                                     args.cpu_extension)[1]
 
     
 
