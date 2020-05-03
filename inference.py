@@ -36,71 +36,73 @@ class Network:
         self.plugin = None
         self.input_blob = None
         self.out_blob = None
-        self.net_plugin = None
+        self.exec_network  = None
         self.infer_request = None
 
-    def load_model(self, model, device, input_s, output_s, num_requests, cpu_extension=None, plugin=None):
-        
+    def load_model(self, model, device, num_requests, cpu_extension=None, plugin=None):
+        ### Done: Load the model ###
         model_xml = model
         model_bin = os.path.splitext(model_xml)[0] + ".bin"
+
+        self.network = IENetwork(model=model_xml, weights=model_bin)
         
+        ### DONE: Check for supported layers ###
+        if self.plugin.device == "CPU":
+            supported_layers = self.plugin.get_supported_layers(self.network)
+            not_supported_layers = [layers for layers in self.network.layers.keys() if layers not in supported_layers]
+            
+            if len(not_supported_layers) > 0:
+                sys.exit(1)
+
+        ### DONE: Add any necessary extensions ### 
         if not plugin:
             self.plugin = IEPlugin(device=device)
         else:
             self.plugin = plugin
 
         if cpu_extension and 'CPU' in device:
-            self.plugin.add_cpu_extension(cpu_extension)
+            self.plugin.add_cpu_extension(cpu_extension)    
 
-        self.network = IENetwork(model=model_xml, weights=model_bin)
-        
-        if self.plugin.device == "CPU":
-            supported_layers = self.plugin.get_supported_layers(self.network)
-            not_supported = [layers for layers in self.network.layers.keys() if layers not in supported_layers]
-            
-            if len(not_supported) > 0:
-                sys.exit(1)
-                
-                
+        ### DONE: Return the loaded inference plugin ###      
         if num_requests == 0:
-            self.net_plugin = self.plugin.load(network=self.network)
+            self.exec_network  = self.plugin.load(network=self.network)
         else:
-            self.net_plugin = self.plugin.load(network=self.network, num_requests=num_requests)
+            self.exec_network  = self.plugin.load(network=self.network, num_requests=num_requests)
 
+        # get input and output layer 
         self.input_blob = next(iter(self.network.inputs))
         self.out_blob = next(iter(self.network.outputs))
-        
+
+        ### Note: You may need to update the function parameters. ###
         return self.plugin, self.get_input_shape()
 
-    def get_input_shape(self):
         
+
+    def get_input_shape(self):
+        ### DONE: Return the shape of the input layer ###
         return self.network.inputs[self.input_blob].shape
 
-    #def performance_counter(self, request_id):
-        
-       # perf_count = self.net_plugin.requests[request_id].get_perf_counts()
-        #return perf_count
 
-    def exec_net(self, request_id, frame):
-        
-        self.infer_request = self.net_plugin.start_async(
-            request_id=request_id, inputs={self.input_blob: frame})
-        return self.net_plugin
+    def exec_net(self, request_id, image):
+        ### DONE: Start an asynchronous request ###
+        self.infer_request = self.exec_network .start_async(
+            request_id=request_id, inputs={self.input_blob: image})
+        ### DONE: Return any necessary information ###
+        ### Note: You may need to update the function parameters. ###
+        return self.exec_network 
 
     def wait(self, request_id):
-       
-        waiting = self.net_plugin.requests[request_id].wait(-1)
-        return waiting
+        ### DONE: Wait for the request to be complete. ###
+        status = self.exec_network .requests[request_id].wait(-1)
+        ### DONE: Return any necessary information ###
+        ### Note: You may need to update the function parameters. ###
+        return status
 
     def get_output(self, request_id, output=None):
+        ### Done: Extract and return the output results
+        ### Note: You may need to update the function parameters. ###
         if output:
             result = self.infer_request_handle.outputs[output]
         else:
-            result = self.net_plugin.requests[request_id].outputs[self.out_blob]
+            result = self.exec_network .requests[request_id].outputs[self.out_blob]
         return result
-
-    def clean(self):
-       
-        del self.net_plugin
-        del self.plugin
-        del self.network
