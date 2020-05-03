@@ -28,11 +28,13 @@ import json
 import cv2
 import numpy as np 
 
+
 import logging as log
 import paho.mqtt.client as mqtt
 
 from argparse import ArgumentParser
-from inference import Network
+from inference2 import Network
+from collections import deque
 
 # MQTT server environment variables
 HOSTNAME = socket.gethostname()
@@ -87,22 +89,29 @@ def infer_on_stream(args, client):
     :param client: MQTT client
     :return: None
     """
-    # Initialise the class
-    network = Network()
-    # Set Probability threshold for detections
-    prob_threshold = args.prob_threshold
-
-    ### DONE: Load the model through `network` ###
-    network.load_model(args.model, args.device, args.cpu_extension)
-    n, c, h, w = network[1]
-    
-
     # intialising variables 
     image_flag = False 
     current_request_id = 0 
     last = 0 
     total = 0 
     start = 0 
+
+
+    max_len = 30
+    track_threshold = 0.1 
+    track  = deque(maxlen=max_len)
+
+    # Initialise the class
+    network = Network()
+    # Set Probability threshold for detections
+    prob_threshold = args.prob_threshold
+
+    ### DONE: Load the model through `network` ###
+    
+    n, c, h, w = network.load_model(args.model, args.device, 1, 1,
+                                                 current_request_id, args.cpu_extension)[1]
+
+    
 
 
     ### DONE: Handle the input stream ###
@@ -131,15 +140,14 @@ def infer_on_stream(args, client):
     while cap.isOpened():
         ### DONE: Read from the video capture ###   
         flag, frame = cap.read() 
-
         if not flag:
             break 
         key_pressed = cv2.waitKey(60)
 
         ### DONE: Pre-process the image as needed ###
-        image = cv2.resize(frame, (w,h))
+        image = cv2.resize(frame, (w, h))
         image = image.transpose((2,0,1))
-        image = image.reshape((n,c,h,w))
+        image = image.reshape((n, c, h, w))
 
         ### DONE: Start asynchronous inference for specified request ###
         inf_start_time = time.time() # time inference start
@@ -152,39 +160,46 @@ def infer_on_stream(args, client):
             inf_end_time = time.time() # time inference ended
             diff_time = inf_start_time - inf_end_time # difference in time 
 
-            ### DONE: Get the results of the inference request ###
-            result = network.get_output(current_request_id)  
+        ### DONE: Get the results of the inference request ###
+        result = network.get_output(current_request_id)  
 
 
-            ### DONE: Extract any desired stats from the results ###
-            frame, current_count = extract(frame, result, prob_threshold,
-                                            initial_w, initial_h)
+        ### DONE: Extract any desired stats from the results ###
+        frame, current_count = extract(frame, result, prob_threshold,
+                                    initial_w, initial_h)
 
-            inf_message = "Inference Time: {:.3f}ms".format(diff_time)
+        inf_message = "Inference Time: {:.3f}ms".format(diff_time)
 
-            cv2.putText(frame, inf_message, (15,15), cv2.FONT_HERSHEY_COMPLEX,
-                        0.5, (200, 10, 10), 1)
+        cv2.putText(frame, inf_message, (15,15), cv2.FONT_HERSHEY_COMPLEX,
+                    0.5, (200, 10, 10), 1)
             
 
-            ### DONE: Calculate and send relevant information on ###
-            ### current_count, total_count and duration to the MQTT server ###
-            ### Topic "person": keys of "count" and "total" ###
-            ### Topic "person/duration": key of "duration" ###
-            if current_count > last:
-                start_time = time.time()
-                total += current_count - last 
-                client.publish("person", json.dump({"total":total}))
+        ### DONE: Calculate and send relevant information on ###
+        ### current_count, total_count and duration to the MQTT server ###
+        ### Topic "person": keys of "count" and "total" ###
+        ### Topic "person/duration": key of "duration" ###
+        track.append(current_count)
+        num_tracked = 0 
+        if np.sum(track) / max_len > track_threshold:
+            num_tracked = 1
 
-            if current_count < last:
-                end_time = time.time()
-                duration = int(end_time -start_time)
-                client.publish("person/duration", json.dump({"duration":duration}))
 
-            client.publish("person",json.dump({"count":current_count}))
-            last = current_count
+        if num_tracked > last:
+            global start_time
+            start_time = time.time()
+            total = total + current_count - last 
+            client.publish("person", json.dumps({"total":total}))
 
-            if key_pressed == 27:
-                break
+        if num_tracked < last:
+            end_time = time.time()
+            duration = int(end_time - start_time)
+            client.publish("person/duration", json.dumps({"duration":duration}))
+
+        client.publish("person",json.dumps({"count":current_count}))
+        last = num_tracked
+
+        if key_pressed == 27:
+            break
 
         ### DONE: Send the frame to the FFMPEG server ###
         sys.stdout.buffer.write(frame)
@@ -199,10 +214,6 @@ def infer_on_stream(args, client):
     cv2.destroyAllWindows()
     client.disconnect() 
 
-
-
-
-    
 
 
 def extract(frame, result,prob_threshold,initial_w, initial_h):
