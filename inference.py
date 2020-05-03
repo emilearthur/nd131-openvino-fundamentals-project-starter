@@ -32,69 +32,66 @@ class Network:
     """
 
     def __init__(self):
+        ### Done: Initialize any class variables desired ###
         self.network = None
         self.plugin = None
         self.input_blob = None
         self.out_blob = None
-        self.exec_network  = None
+        self.exec_network = None
         self.infer_request = None
 
     def load_model(self, model, device, num_requests, cpu_extension=None, plugin=None):
         ### Done: Load the model ###
         model_xml = model
         model_bin = os.path.splitext(model_xml)[0] + ".bin"
-
-        self.network = IENetwork(model=model_xml, weights=model_bin)
         
-
         if not plugin:
             self.plugin = IEPlugin(device=device)
         else:
             self.plugin = plugin
 
+        if cpu_extension and 'CPU' in device:
+            self.plugin.add_cpu_extension(cpu_extension) 
+            
+        self.network = IENetwork(model=model_xml, weights=model_bin)
+
         ### DONE: Check for supported layers ###
         if self.plugin.device == "CPU":
             supported_layers = self.plugin.get_supported_layers(self.network)
-            not_supported_layers = [layers for layers in self.network.layers.keys() if layers not in supported_layers]
+            not_supported_layer = [layers for layers in self.network.layers.keys() if layers not in supported_layers]
             
-            if len(not_supported_layers) > 0:
+            if len(not_supported_layer) > 0:
                 sys.exit(1)
+                
+        ### DONE: Add any necessary extensions ###
 
-        ### DONE: Add any necessary extensions ### 
-        if cpu_extension and 'CPU' in device:
-            self.plugin.add_cpu_extension(cpu_extension)    
-
-        ### DONE: Return the loaded inference plugin ###      
+        ### DONE: Return the loaded inference plugin ###         
         if num_requests == 0:
-            self.exec_network  = self.plugin.load(network=self.network)
+            self.exec_network = self.plugin.load(network=self.network)
         else:
-            self.exec_network  = self.plugin.load(network=self.network, num_requests=num_requests)
-
-        # get input and output layer 
+            self.exec_network = self.plugin.load(network=self.network, num_requests=num_requests)
+        # get input and output layer
         self.input_blob = next(iter(self.network.inputs))
         self.out_blob = next(iter(self.network.outputs))
-
+        
         ### Note: You may need to update the function parameters. ###
         return self.plugin, self.get_input_shape()
-
-        
 
     def get_input_shape(self):
         ### DONE: Return the shape of the input layer ###
         return self.network.inputs[self.input_blob].shape
 
-
     def exec_net(self, request_id, image):
         ### DONE: Start an asynchronous request ###
-        self.infer_request = self.exec_network .start_async(
+        self.infer_request = self.exec_network.start_async(
             request_id=request_id, inputs={self.input_blob: image})
         ### DONE: Return any necessary information ###
         ### Note: You may need to update the function parameters. ###
-        return self.exec_network 
+        return self.exec_network
 
     def wait(self, request_id):
         ### DONE: Wait for the request to be complete. ###
-        status = self.exec_network .requests[request_id].wait(-1)
+        status = self.exec_network.requests[request_id].wait(-1)
         ### DONE: Return any necessary information ###
         ### Note: You may need to update the function parameters. ###
         return status
@@ -105,5 +102,5 @@ class Network:
         if output:
             result = self.infer_request_handle.outputs[output]
         else:
-            result = self.exec_network .requests[request_id].outputs[self.out_blob]
+            result = self.exec_network.requests[request_id].outputs[self.out_blob]
         return result
