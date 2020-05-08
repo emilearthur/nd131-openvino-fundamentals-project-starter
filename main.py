@@ -97,8 +97,8 @@ def infer_on_stream(args, client):
     start = 0 
 
 
-    max_len = 30
-    track_threshold = 0.1 
+    max_len = 40
+    track_threshold = 0.2 
     track  = deque(maxlen=max_len)
 
     # Initialise the class
@@ -123,8 +123,13 @@ def infer_on_stream(args, client):
         image_flag = True 
         input_stream = args.input
     # check for video 
-    else:
+    elif args.input.endswith('.mp4') or args.input.endswith('.avi'):
         input_stream = args.input
+    # exit if other 
+    else: 
+        input_stream = args.input
+        print("Input a video or Image")
+        sys.exit(1)
 
     cap = cv2.VideoCapture(input_stream) 
     
@@ -168,7 +173,7 @@ def infer_on_stream(args, client):
         frame, current_count = extract(frame, result, prob_threshold,
                                     initial_w, initial_h)
 
-        inf_message = "Inference Time: {:.3f}ms".format(diff_time)
+        inf_message = "Inference Time: {:.3f}s".format(diff_time)
 
         cv2.putText(frame, inf_message, (15,15), cv2.FONT_HERSHEY_COMPLEX,
                     0.5, (200, 10, 10), 1)
@@ -195,7 +200,7 @@ def infer_on_stream(args, client):
             duration = int(end_time - start_time)
             client.publish("person/duration", json.dumps({"duration":duration}))
 
-        client.publish("person",json.dumps({"count":current_count}))
+        client.publish("person",json.dumps({"count":num_tracked}), retain= True) #added something here 
         last = num_tracked
 
         if key_pressed == 27:
