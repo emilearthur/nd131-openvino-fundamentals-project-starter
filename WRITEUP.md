@@ -24,7 +24,7 @@ Example Below:
 * Download the SSD MobileNet V2 COCO model from Tensorflow
 
 ``` wget
-wget tar -xvf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
+wget http://download.tensorflow.org/models/object_detection/ssd_mobilenet_v2_coco_2018_03_29.tar.gz
 
 ```
 
@@ -69,12 +69,13 @@ The difference between model accuracy pre- and post-conversion was...
 
 The size of the model pre- and post-conversion was...
 
-* The size of the pre- and post- conversion are almost the same. The size of the frozen inference graph(.pb file) for SSD MobileNet V2 COCO model is 69.7MB and the size of the IR XML + BIN file is 64.2MB.
-
+* The size of the SSD MobileNet V2 COCO model is 179MB is larger than the size of the IR XML + BIN file is 64.2MB.
 
 The inference time of the model pre- and post-conversion was...
 
-* The inference time of the converted model was shorter compared to the orignal model. The inference time of the model pre- and post-conversion was 74ms.
+TODO: What was the time pre-conversion, and how did you measure it or where do you get it from?
+
+* The inference time of the converted model was shorter compared to the orignal model. The inference time of the model pre- and post-conversion was 74s.
 
 compare the differences in network needs and costs of using cloud services as opposed to deploying at the edge...
 
