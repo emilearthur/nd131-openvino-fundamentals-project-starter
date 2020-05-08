@@ -19,7 +19,7 @@ The process behind converting custom layers involves...
 * Edit the CPU Extension Template files.
 * Excute the Model with the Custom Layer.
 
-Below is processing 
+Example Below:
 
 * Download the SSD MobileNet V2 COCO model from Tensorflow
 
