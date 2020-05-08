@@ -19,9 +19,46 @@ The process behind converting custom layers involves...
 * Edit the CPU Extension Template files.
 * Excute the Model with the Custom Layer.
 
+Below is processing 
+
+* Download the SSD MobileNet V2 COCO model from Tensorflow
+
+``` wget
+wget tar -xvf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
+
+```
+
+* Use tar -xvf command to unpack the zipped model file.
+
+``` tar
+tar -xvf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
+```
+
+* Cd into the models directory and convert the Tensorflow model by feeding SSD MobileNet V2 COCO model's .pb file using the model optimizer.
+
+``` MOG
+python /opt/intel/openvino/deployment_tools/model_optimizer/mo.py --input_model frozen_inference_graph.pb --tensorflow_object_detection_api_pipeline_config pipeline.config --reverse_input_channels --tensorflow_use_custom_operations_config /opt/intel/openvino/deployment_tools/model_optimizer/extensions/front/tf/ssd_v2_support.json
+```
+
+* Successful conversion results to generation of a .xml and .bin IR model files.
+
 Some of the potential reasons for handling custom layers are:
 
-* To optimize pre-trained models and convert them to Intermediate Representation (IR) without loss of accuracy and increase in perfomacance.
+* To optimize pre-trained models and convert them to Intermediate Representation (IR) without loss of accuracy and increase in perfomance.
+
+To run the project, use the following commands:
+using video file
+
+```video
+python main.py -i resources/Pedestrian_Detect_2_1_1.mp4 -m your-model.xml -l /opt/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_sse4.so -d CPU -pt 0.6 | ffmpeg -v warning -f rawvideo -pixel_format bgr24 -video_size 768x432 -framerate 24 -i - http://0.0.0.0:3004/fac.ffm
+```
+
+using camera stream:
+
+```stream
+python main.py -i CAM -m your-model.xml -l /opt/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_sse4.so -d CPU -pt 0.6 | ffmpeg -v warning -f rawvideo -pixel_format bgr24 -video_size 768x432 -framerate 24 -i - http://0.0.0.0:3004/fac.ffm
+
+```
 
 ## Comparing Model Performance
 
@@ -34,9 +71,16 @@ The size of the model pre- and post-conversion was...
 
 * The size of the pre- and post- conversion are almost the same. The size of the frozen inference graph(.pb file) for SSD MobileNet V2 COCO model is 69.7MB and the size of the IR XML + BIN file is 64.2MB.
 
+
 The inference time of the model pre- and post-conversion was...
 
 * The inference time of the converted model was shorter compared to the orignal model. The inference time of the model pre- and post-conversion was 74ms.
+
+compare the differences in network needs and costs of using cloud services as opposed to deploying at the edge...
+
+* Edge models needs only a local network connection to function and they can also perform on low speed networks compared to cloud services which need high speed internet to function which is costly.
+
+* Cost of renting a server (eg. AWS, GCP, Azure and etc) is high compared to running edge models on minimal cpu on local network connection.
 
 ## Assess Model Use Cases
 
