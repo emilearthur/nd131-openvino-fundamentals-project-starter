@@ -21,6 +21,7 @@ The process behind converting custom layers involves...
 
 Example Below:
 
+Downloading and converting SSD MobileNet V2 COCO model (post-conversion)
 * Download the SSD MobileNet V2 COCO model from Tensorflow
 
 ``` wget
@@ -37,10 +38,16 @@ tar -xvf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
 * Cd into the models directory and convert the Tensorflow model by feeding SSD MobileNet V2 COCO model's .pb file using the model optimizer.
 
 ``` MOG
-python /opt/intel/openvino/deployment_tools/model_optimizer/mo.py --input_model frozen_inference_graph.pb --tensorflow_object_detection_api_pipeline_config pipeline.config --reverse_input_channels --tensorflow_use_custom_operations_config /opt/intel/openvino/deployment_tools/model_optimizer/extensions/front/tf/ssd_v2_support.json
+python /opt/intel/openvino/deployment_tools/model_optimizer/mo.py --input_model frozen_inference_graph.pb --tensorflow_object_detection_api_pipeline_config pipeline.config --reverse_input_channels --tensorflow_use_custom_operations_config /opt/intel/openvino/deployment_tools/model_optimizer/extensions/front/tf/ssd_v2_support.json --tensorflow_object_detection_api_pipeline_config pipeline.config --reverse_input_channels -o /home/workspace/
 ```
 
 * Successful conversion results to generation of a .xml and .bin IR model files.
+
+Downloading and converting person-detection-retail-0013 model (pre-conversion) via terminal
+
+* cd into /opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader directory .
+* enter ```sudo ./downloader.py --name person-detection-retail-0013 --precisions FP16 -o / home/workspace``` to download the model.
+* After successful download both the .xml and .bin files will be located at the workspace directory.
 
 Some of the potential reasons for handling custom layers are:
 
