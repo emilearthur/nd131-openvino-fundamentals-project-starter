@@ -70,8 +70,6 @@ def build_argparser():
                         "(0.5 by default)")
     return parser
 
-   # TODO: Investigate lower prob_threshold for better detection with the current conditions.
-
 
 
 def connect_mqtt():
@@ -128,7 +126,7 @@ def infer_on_stream(args, client):
     # check for video 
     elif args.input.endswith('.mp4') or args.input.endswith('.avi'):
         input_stream = args.input
-    # exit if other 
+    # exit if other files
     else: 
         input_stream = args.input
         print("Input a video or Image")
