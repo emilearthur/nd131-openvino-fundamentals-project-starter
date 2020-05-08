@@ -67,15 +67,15 @@ were...
 
 The difference between model accuracy pre- and post-conversion was...
 
+* The inference time of the pre-conversion model ( [person_retail_0013_description_person_detection_retail_0013](https://docs.openvinotoolkit.org/2019_R3/_models_intel_person_detection_retail_0013_description_person_detection_retail_0013.html)) was 0.047s and that of the post-conversion model (SSD MobileNet V2 COCO) was 0.72s.
+
 The size of the model pre- and post-conversion was...
 
-* The size of the SSD MobileNet V2 COCO model is 179MB is larger than the size of the IR XML + BIN file is 64.2MB.
+* The size of the post-coonversion model (SSD MobileNet V2 COCO), i.e. IR XML + BIN file is 64.22MB is larger than the size of the pre-conversion model (person_retail_0013_description_person_detection_retail_0013), i.e. XML + BIN file is 1565KB.
 
 The inference time of the model pre- and post-conversion was...
 
-TODO: What was the time pre-conversion, and how did you measure it or where do you get it from?
-
-* The inference time of the converted model was shorter compared to the orignal model. The inference time of the model pre- and post-conversion was 74s.
+* The inference time of the pre-conversion model (person_retail_0013_description_person_detection_retail_0013) was 0.047sec and it had less inference time compared to the post-coonversion model (SSD MobileNet V2 COCO) which was 0.74sec.
 
 compare the differences in network needs and costs of using cloud services as opposed to deploying at the edge...
 
