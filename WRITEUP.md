@@ -14,7 +14,10 @@ For more visit: https://docs.openvinotoolkit.org/latest/_docs_MO_DG_prepare_mode
 
 The process behind converting custom layers involves...
 
-* Adding extensions to both the Model Optimizer and the Inference Engine.
+* Generating the Extension Template files using the Model Extension Generator (MOG).
+* Using the Model Optimizer to Generate IR Files containing the Custom Layer.
+* Edit the CPU Extension Template files.
+* Excute the Model with the Custom Layer.
 
 Some of the potential reasons for handling custom layers are:
 
@@ -29,7 +32,11 @@ The difference between model accuracy pre- and post-conversion was...
 
 The size of the model pre- and post-conversion was...
 
+* The size of the pre- and post- conversion are almost the same. The size of the frozen inference graph(.pb file) for SSD MobileNet V2 COCO model is 69.7MB and the size of the IR XML + BIN file is 64.2MB.
+
 The inference time of the model pre- and post-conversion was...
+
+* The inference time of the converted model was shorter compared to the orignal model. The inference time of the model pre- and post-conversion was 74ms.
 
 ## Assess Model Use Cases
 

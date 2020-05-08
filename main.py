@@ -158,7 +158,7 @@ def infer_on_stream(args, client):
         ### DONE: Wait for the result ###
         if network.wait(current_request_id) == 0:
             inf_end_time = time.time() # time inference ended
-            diff_time = inf_start_time - inf_end_time # difference in time 
+            diff_time = abs(inf_start_time - inf_end_time) # difference in time 
 
         ### DONE: Get the results of the inference request ###
         result = network.get_output(current_request_id)  
