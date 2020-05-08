@@ -70,6 +70,9 @@ def build_argparser():
                         "(0.5 by default)")
     return parser
 
+   # TODO: Investigate lower prob_threshold for better detection with the current conditions.
+
+
 
 def connect_mqtt():
     ### DONE: Connect to the MQTT client ###
