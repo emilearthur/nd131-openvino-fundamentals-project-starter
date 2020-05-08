@@ -100,9 +100,9 @@ Each of these use cases would be useful because...
 Lighting, model accuracy, and camera focal length/image size have different effects on a
 deployed edge model. The potential effects of each of these are as follows...
 
-* Lighting: Lighting is an essential factor to the results of the model becuase increase/decrease has a direct impact on the number of false positives obtained. Thus the place monitored should have sufficient light.
-* Model Accuracy: Model accuracy is important as it also direct effect in increase/decrease in false postives. Since model is deployed on the edge and results is need in realtime, it should have low high accuracy to help end users get the desired results. In all model accruracy affects statistical measurement.
-* Camera focal Length:  High focal length results to good focus on object and narrow angle image whiles the other is vice versa. Depending on what the end-user want, it should noted that each choice either makes reaction of the dectected situation better or worse. Eg. A user who wants monitor a wider place than have more focus will end up with a model which extracts less information. This lowers the accuracy of the model.
+* Lighting: Lighting is an essential factor to the results of the model becuase increase/decrease has a direct impact on the number of false positives obtained. Thus the place monitored should have sufficient light to get good accuracy of the model.
+* Model Accuracy: Since model is deployed on the edge and results is need in realtime, it should have high accuracy to help end users get the desired results. High/Low accuracy has impact on the number of false postives which affects statistical measurement.
+* Camera focal Length:  High focal length results to good focus on object and narrow angle image whiles the other is vice versa. Depending on what the end-user wants, it should noted that each choice has an impact on dectected situation and it can make it better or worse. Eg. A user who wants monitor a wider place than have more focus will end up with a model which extracts less information. This lowers the accuracy of the model.
 * Image Size: Image size is dependant on resolution. If image resolution is higher then the size is larger. Model gives better output on images with higher resolution but his takes time and space. Thus if end user has enough space and little delay does not cause an issue then higher resolution can be used else otherwise.
 
 ## Model Research
