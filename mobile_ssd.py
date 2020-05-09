@@ -121,7 +121,7 @@ while True:
             
 
     df = pd.DataFrame(data_list)
-    df.to_csv('\resutls\ results.csv')
+    df.to_csv("\results\results.csv")
     cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
     cv2.imshow("frame", frame)
     if cv2.waitKey(1) >= 0:  # Break with ESC 
