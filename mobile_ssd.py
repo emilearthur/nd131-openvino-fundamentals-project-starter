@@ -3,6 +3,7 @@ import numpy as np
 import argparse
 import cv2 
 import time
+import pandas as pd 
 
 # construct the argument parse 
 parser = argparse.ArgumentParser(
@@ -36,9 +37,10 @@ else:
 #Load the Caffe model 
 #net = cv2.dnn.readNetFromTensorflow(args.prototxt, args.weights)
 net = cv2.dnn.readNetFromCaffe(args.prototxt, args.weights)
-
+data_list = []
 
 while True:
+    data_capture = {}
     # Capture frame-by-frame
     ret, frame = cap.read()
     frame_resized = cv2.resize(frame,(300,300)) # resize frame for prediction
@@ -71,6 +73,8 @@ while True:
             inf_end_time = time.time() # time inference ended
             diff_time = abs(inf_start_time - inf_end_time) # difference in time
 
+
+
             # Object location 
             xLeftBottom = int(detections[0, 0, i, 3] * widthFactor) 
             yLeftBottom = int(detections[0, 0, i, 4] * HeightFactor)
@@ -93,11 +97,18 @@ while True:
             cv2.putText(frame, inf_message, (15,15), cv2.FONT_HERSHEY_COMPLEX,
                     0.5, (200, 10, 10), 1)
 
-            # Draw label and confidence of prediction in frame resized
-            if class_id in classNames:
-                label = classNames[class_id] + ": " + str(confidence) + " , inference time = " + str(round(diff_time,3))
-                labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
 
+            data_capture['time'] = time.strftime("%H:%M:%S", time.localtime())
+            data_capture['confidence']= confidence
+            data_capture['inference_time'] = diff_time
+
+            data_list.append(data_capture)
+
+            # Draw label and confidence of prediction in frame resized        
+            if class_id in classNames:
+                label = classNames[class_id] + ": " + str(round(confidence,3)) + " , inference time = " + str(round(diff_time,3))
+                labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+                
                 yLeftBottom = max(yLeftBottom, labelSize[1])
                 cv2.rectangle(frame, (xLeftBottom, yLeftBottom - labelSize[1]),
                                      (xLeftBottom + labelSize[0], yLeftBottom + baseLine),
@@ -106,8 +117,13 @@ while True:
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
 
                 print(label) #print class and confidence
+            
+            
 
+    df = pd.DataFrame(data_list)
+    df.to_csv('\resutls\ results.csv')
     cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
     cv2.imshow("frame", frame)
     if cv2.waitKey(1) >= 0:  # Break with ESC 
         break
+
