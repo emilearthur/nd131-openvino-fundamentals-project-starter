@@ -134,6 +134,7 @@ dmypy.json
 # input data and models 
 input/
 model/
+results/
 ssd_mobilenet_v2_coco_2018_03_29.tar.gz
 ssd_mobilenet_v2_coco_2018_03_29/
 
