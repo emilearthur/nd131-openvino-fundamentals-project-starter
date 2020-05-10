@@ -82,8 +82,8 @@ The size of the model pre- and post-conversion was...
 
 The inference time of the model pre- and post-conversion was...
 
-* Inference time of the pre-conversion model: Average inference time=145.02ms, min inference time= 89.60ms, max inference time: 5954.20ms.
-Inference time of the post-conversion model: Average inference time=2.68ms, min inference time=0.31ms, max inference time=67.52ms
+* Inference time of the pre-conversion model: Min inference time= 89.60ms, max inference time: 5954.20ms.
+Inference time of the post-conversion model: Min inference time=74ms, max inference time=81ms
 
 compare the differences in network needs and costs of using cloud services as opposed to deploying at the edge...
 
