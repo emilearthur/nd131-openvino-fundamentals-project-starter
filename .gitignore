@@ -146,5 +146,7 @@ ssd_mobilenet_v2_coco_2018_03_29/
 *.pth 
 *.pb
 *pbtxt
+
+#files 
 mobile_ssd_2.py
 mobile_sdd.py
