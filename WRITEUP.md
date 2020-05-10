@@ -78,11 +78,12 @@ The difference between model accuracy pre- and post-conversion was...
 
 The size of the model pre- and post-conversion was...
 
-* The size of the post-coonversion model (SSD MobileNet V2 COCO), i.e. MobileNetSSD_deploy.caffemodel + MobileNetSSD_deploy.prototxt file is 22.7MB is larger than the size of the pre-conversion model (person_retail_0013_description_person_detection_retail_0013), i.e. XML + BIN file is 1565KB.
+* size of the fozen inference graph(.pb file) = 69.7Mb and size of the pos-conversion model xml+bin file = 67.5Mb
 
 The inference time of the model pre- and post-conversion was...
 
-* The inference time of the pre-conversion model ( [person_retail_0013_description_person_detection_retail_0013](https://docs.openvinotoolkit.org/2019_R3/_models_intel_person_detection_retail_0013_description_person_detection_retail_0013.html)) was 0.047s and that of the post-conversion model (SSD MobileNet V2 COCO using the opencv dnn libray, run mobile_ssd.py) was 0.152s. This shows that the pre-conversion model has less inference time compared to the post-conversion model.
+* Inference time of the pre-conversion model: Average inference time=145ms, min inference time= 90ms, max inference time: 5954ms.
+Inference time of the post-conversion model: Average inference time=3ms, min inference time=0.31ms, max inference time=68ms
 
 compare the differences in network needs and costs of using cloud services as opposed to deploying at the edge...
 
